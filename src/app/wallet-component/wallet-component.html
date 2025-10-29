@@ -1,0 +1,132 @@
+<div class="wallet-container">
+  <ng-container *ngIf="walletState$ | async as state">
+
+    <header class="wallet-header">
+      <h2>Sui Wallet</h2>
+      <span 
+        class="status-badge" 
+        [class.status-connected]="state.isConnected"
+        [class.status-disconnected]="!state.isConnected"
+      >
+        {{ state.isConnected ? 'LIVE' : 'OFFLINE' }}
+      </span>
+    </header>
+
+    <p *ngIf="state.error" class="error-message">
+      ⚠️ Error: {{ state.error }}
+    </p>
+    
+    <div *ngIf="isLoading" class="loader-overlay">
+        <span class="loader-spinner"></span>
+        <p>Processing...</p>
+    </div>
+
+    <section class="account-info">
+      <ng-container *ngIf="state.isConnected; else disconnectedInfo">
+        
+        <div class="info-group">
+          <label>Wallet Name:</label>
+          <p class="info-value"><b>{{ state.selectedWallet?.name || 'Unknown Wallet' }}</b></p>
+        </div>
+
+        <div class="info-group">
+          <label>Active Address:</label>
+          <p class="info-value address-display">
+            {{ activeAddress }}
+          </p>
+        </div>
+        
+        <div class="info-group">
+          <label>Current Chain:</label>
+          <p class="info-value">
+            🌐 <b>{{ state.selectedChain!.split(':')[1] || state.selectedChain }}</b>
+          </p>
+        </div>
+
+      </ng-container>
+
+      <ng-template #disconnectedInfo>
+        <div class="info-group disconnected-message">
+          <p>Please connect your Sui wallet to get started.</p>
+          <p *ngIf="state.selectedChain">
+            Last active network: <b>{{ state.selectedChain!.split(':')[1] || state.selectedChain }}</b>
+          </p>
+        </div>
+      </ng-template>
+    </section>
+    
+    <div class="action-buttons">
+      <button 
+        *ngIf="!state.isConnected" 
+        (click)="connect()" 
+        class="btn btn-primary"
+        [disabled]="isLoading"
+      >
+        🔗 Connect Wallet
+      </button>
+      
+      <button 
+        *ngIf="state.isConnected" 
+        (click)="disconnect()" 
+        class="btn btn-secondary"
+        [disabled]="isLoading"
+      >
+        🔌 Disconnect
+      </button>
+      
+      <button 
+        *ngIf="state.isConnected" 
+        (click)="refreshState()" 
+        class="btn btn-tertiary" 
+        [disabled]="isLoading"
+        title="Click to update address after switching account in wallet extension"
+      >
+        🔄 Refresh Account
+      </button>
+    </div>
+
+    <div *ngIf="!state.isConnected && !isLoading" class="available-wallets">
+        <label>Select a specific wallet:</label>
+        <div class="wallet-list">
+            <button 
+                *ngFor="let wallet of walletService.getAvailableWallets()"
+                (click)="connectSpecificWallet(wallet.name)"
+                [disabled]="isLoading"
+            >
+                {{ wallet.name }}
+            </button>
+        </div>
+    </div>
+
+
+    <div class="separator"></div>
+
+    <div *ngIf="state.isConnected && state.selectedWallet!.chains.length > 1" class="chain-switcher">
+      <label class="switcher-label">Switch Network:</label>
+      <div class="chain-buttons-group">
+        <button
+          *ngFor="let chain of state.selectedWallet!.chains"
+          [disabled]="state.selectedChain === chain || isLoading" 
+          (click)="switchChain(chain)"
+          [class.active]="state.selectedChain === chain"
+          class="chain-btn"
+        >
+          {{ chain.split(':')[1] || chain }}
+        </button>
+      </div>
+    </div>
+    
+    <div *ngIf="state.isConnected" class="separator"></div>
+
+    <div class="dapp-action">
+      <button 
+        *ngIf="state.isConnected" 
+        [disabled]="!state.selectedChain || isLoading" 
+        class="btn btn-action"
+      >
+        🚀 Execute Example Transaction
+      </button>
+    </div>
+
+  </ng-container>
+</div>
