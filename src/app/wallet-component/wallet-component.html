@@ -3,11 +3,8 @@
 
     <header class="wallet-header">
       <h2>Sui Wallet</h2>
-      <span 
-        class="status-badge" 
-        [class.status-connected]="state.isConnected"
-        [class.status-disconnected]="!state.isConnected"
-      >
+      <span class="status-badge" [class.status-connected]="state.isConnected"
+        [class.status-disconnected]="!state.isConnected">
         {{ state.isConnected ? 'LIVE' : 'OFFLINE' }}
       </span>
     </header>
@@ -15,15 +12,15 @@
     <p *ngIf="state.error" class="error-message">
       ⚠️ Error: {{ state.error }}
     </p>
-    
-    <div *ngIf="isLoading" class="loader-overlay">
-        <span class="loader-spinner"></span>
-        <p>Processing...</p>
+
+    <div *ngIf="isLoading || txProcessing" class="loader-overlay">
+      <span class="loader-spinner"></span>
+      <p>{{ txProcessing ? 'Confirm transaction in wallet...' : 'Processing connection/state...' }}</p>
     </div>
 
     <section class="account-info">
       <ng-container *ngIf="state.isConnected; else disconnectedInfo">
-        
+
         <div class="info-group">
           <label>Wallet Name:</label>
           <p class="info-value"><b>{{ state.selectedWallet?.name || 'Unknown Wallet' }}</b></p>
@@ -35,7 +32,7 @@
             {{ activeAddress }}
           </p>
         </div>
-        
+
         <div class="info-group">
           <label>Current Chain:</label>
           <p class="info-value">
@@ -43,6 +40,17 @@
           </p>
         </div>
 
+        <div class="info-group balance-display">
+          <label>SUI Balance:</label>
+          <p class="info-value">
+            💰
+            <b>{{ formatSuiBalance(state.suiBalance) }}</b>
+            <button (click)="fetchBalance()" [disabled]="isLoading || txProcessing" title="Refresh balance"
+              class="refresh-balance-btn">
+              ↻
+            </button>
+          </p>
+        </div>
       </ng-container>
 
       <ng-template #disconnectedInfo>
@@ -54,48 +62,33 @@
         </div>
       </ng-template>
     </section>
-    
+
     <div class="action-buttons">
-      <button 
-        *ngIf="!state.isConnected" 
-        (click)="connect()" 
-        class="btn btn-primary"
-        [disabled]="isLoading"
-      >
+      <button *ngIf="!state.isConnected" (click)="connect()" class="btn btn-primary"
+        [disabled]="isLoading || txProcessing">
         🔗 Connect Wallet
       </button>
-      
-      <button 
-        *ngIf="state.isConnected" 
-        (click)="disconnect()" 
-        class="btn btn-secondary"
-        [disabled]="isLoading"
-      >
+
+      <button *ngIf="state.isConnected" (click)="disconnect()" class="btn btn-secondary"
+        [disabled]="isLoading || txProcessing">
         🔌 Disconnect
       </button>
-      
-      <button 
-        *ngIf="state.isConnected" 
-        (click)="refreshState()" 
-        class="btn btn-tertiary" 
-        [disabled]="isLoading"
-        title="Click to update address after switching account in wallet extension"
-      >
+
+      <button *ngIf="state.isConnected" (click)="refreshState()" class="btn btn-tertiary"
+        [disabled]="isLoading || txProcessing"
+        title="Click to update address after switching account in wallet extension">
         🔄 Refresh Account
       </button>
     </div>
 
-    <div *ngIf="!state.isConnected && !isLoading" class="available-wallets">
-        <label>Select a specific wallet:</label>
-        <div class="wallet-list">
-            <button 
-                *ngFor="let wallet of walletService.getAvailableWallets()"
-                (click)="connectSpecificWallet(wallet.name)"
-                [disabled]="isLoading"
-            >
-                {{ wallet.name }}
-            </button>
-        </div>
+    <div *ngIf="!state.isConnected && !isLoading && !txProcessing" class="available-wallets">
+      <label>Select a specific wallet:</label>
+      <div class="wallet-list">
+        <button *ngFor="let wallet of walletService.getAvailableWallets()" (click)="connectSpecificWallet(wallet.name)"
+          [disabled]="isLoading || txProcessing">
+          {{ wallet.name }}
+        </button>
+      </div>
     </div>
 
 
@@ -104,28 +97,33 @@
     <div *ngIf="state.isConnected && state.selectedWallet!.chains.length > 1" class="chain-switcher">
       <label class="switcher-label">Switch Network:</label>
       <div class="chain-buttons-group">
-        <button
-          *ngFor="let chain of state.selectedWallet!.chains"
-          [disabled]="state.selectedChain === chain || isLoading" 
-          (click)="switchChain(chain)"
-          [class.active]="state.selectedChain === chain"
-          class="chain-btn"
-        >
+        <button *ngFor="let chain of state.selectedWallet!.chains"
+          [disabled]="state.selectedChain === chain || isLoading || txProcessing" (click)="switchChain(chain)"
+          [class.active]="state.selectedChain === chain" class="chain-btn">
           {{ chain.split(':')[1] || chain }}
         </button>
       </div>
     </div>
-    
+
     <div *ngIf="state.isConnected" class="separator"></div>
 
     <div class="dapp-action">
-      <button 
-        *ngIf="state.isConnected" 
-        [disabled]="!state.selectedChain || isLoading" 
-        class="btn btn-action"
-      >
-        🚀 Execute Example Transaction
+      <label class="switcher-label">Example SUI Transfer (0.001 SUI):</label>
+      <input type="text" [(ngModel)]="recipientAddress" placeholder="Enter recipient address (0x...)"
+        [disabled]="!state.isConnected || txProcessing" class="recipient-input">
+
+      <button *ngIf="state.isConnected" (click)="executeTransaction()"
+        [disabled]="!state.selectedChain || txProcessing || !activeAddress" class="btn btn-action">
+        <span *ngIf="!txProcessing">🚀 Send Test SUI</span>
+        <span *ngIf="txProcessing">⏳ Confirm in Wallet...</span>
       </button>
+
+      <p *ngIf="lastTxDigest" class="tx-result">
+        Tx Digest:
+        <a [href]="getSuiScanLink(lastTxDigest, state.selectedChain!)" target="_blank">
+          {{ lastTxDigest.substring(0, 10) }}... (View on Explorer)
+        </a>
+      </p>
     </div>
 
   </ng-container>

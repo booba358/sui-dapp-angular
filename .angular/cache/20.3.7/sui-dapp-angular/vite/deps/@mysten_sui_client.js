@@ -8,7 +8,7 @@ import {
   hasMvrName,
   isTransaction,
   jsonRpcClientResolveTransactionPlugin
-} from "./chunk-IX2S6EDK.js";
+} from "./chunk-OJZEUKCG.js";
 import {
   SUI_ADDRESS_LENGTH,
   TypeTagSerializer,
@@ -28,7 +28,7 @@ import {
   suiBcs,
   toBase64,
   toHex
-} from "./chunk-YEGMFPOD.js";
+} from "./chunk-CIEEBTQY.js";
 import {
   __objRest,
   __spreadProps,

@@ -466,6 +466,21 @@ function chunk(array, size) {
   });
 }
 
+// node_modules/@mysten/utils/dist/esm/with-resolver.js
+function promiseWithResolvers() {
+  let resolver;
+  let rejecter;
+  const promise = new Promise((resolve, reject) => {
+    resolver = resolve;
+    rejecter = reject;
+  });
+  return {
+    promise,
+    resolve: resolver,
+    reject: rejecter
+  };
+}
+
 // node_modules/@mysten/utils/dist/esm/dataloader.js
 var DataLoader = class {
   constructor(batchLoadFn, options) {
@@ -3479,6 +3494,7 @@ export {
   fromHex,
   toHex,
   chunk,
+  promiseWithResolvers,
   DataLoader,
   isSerializedBcs,
   toB64,
@@ -3525,4 +3541,4 @@ export {
 @noble/hashes/esm/utils.js:
   (*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 */
-//# sourceMappingURL=chunk-YEGMFPOD.js.map
+//# sourceMappingURL=chunk-CIEEBTQY.js.map

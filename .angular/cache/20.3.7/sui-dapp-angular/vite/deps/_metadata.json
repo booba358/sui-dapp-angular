@@ -1,65 +1,74 @@
 {
-  "hash": "bc7adf55",
-  "configHash": "80b22ba4",
+  "hash": "e33d9058",
+  "configHash": "9c76cb22",
   "lockfileHash": "4bf0bb70",
-  "browserHash": "3ab2c18e",
+  "browserHash": "75bb4d9c",
   "optimized": {
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "6e750d32",
+      "fileHash": "6ba0e794",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "d51cb2eb",
+      "fileHash": "32edeba1",
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
-      "fileHash": "6b052186",
+      "fileHash": "685ae1a0",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "82140a8f",
+      "fileHash": "f115aa87",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "f1bce754",
+      "fileHash": "bf924b66",
       "needsInterop": false
     },
     "@mysten/sui/client": {
       "src": "../../../../../../node_modules/@mysten/sui/dist/esm/client/index.js",
       "file": "@mysten_sui_client.js",
-      "fileHash": "bca6c016",
+      "fileHash": "8ff81a07",
       "needsInterop": false
     },
     "rxjs": {
       "src": "../../../../../../node_modules/rxjs/dist/esm5/index.js",
       "file": "rxjs.js",
-      "fileHash": "719ccd8d",
+      "fileHash": "9dc051c4",
       "needsInterop": false
     },
     "@mysten/wallet-standard": {
       "src": "../../../../../../node_modules/@mysten/wallet-standard/dist/esm/index.js",
       "file": "@mysten_wallet-standard.js",
-      "fileHash": "ded0986e",
+      "fileHash": "24bbfd27",
       "needsInterop": false
     },
     "@mysten/sui/utils": {
       "src": "../../../../../../node_modules/@mysten/sui/dist/esm/utils/index.js",
       "file": "@mysten_sui_utils.js",
-      "fileHash": "f98c0b50",
+      "fileHash": "e98c4b03",
+      "needsInterop": false
+    },
+    "@mysten/sui/transactions": {
+      "src": "../../../../../../node_modules/@mysten/sui/dist/esm/transactions/index.js",
+      "file": "@mysten_sui_transactions.js",
+      "fileHash": "c5397298",
       "needsInterop": false
     }
   },
   "chunks": {
+    "chunk-MNA5IGWR": {
+      "file": "chunk-MNA5IGWR.js"
+    },
     "chunk-BYEVF4IK": {
       "file": "chunk-BYEVF4IK.js"
     },
@@ -69,14 +78,14 @@
     "chunk-LMFV3QGX": {
       "file": "chunk-LMFV3QGX.js"
     },
+    "chunk-OJZEUKCG": {
+      "file": "chunk-OJZEUKCG.js"
+    },
+    "chunk-CIEEBTQY": {
+      "file": "chunk-CIEEBTQY.js"
+    },
     "chunk-RSS3ODKE": {
       "file": "chunk-RSS3ODKE.js"
-    },
-    "chunk-IX2S6EDK": {
-      "file": "chunk-IX2S6EDK.js"
-    },
-    "chunk-YEGMFPOD": {
-      "file": "chunk-YEGMFPOD.js"
     },
     "chunk-GOMI4DH3": {
       "file": "chunk-GOMI4DH3.js"

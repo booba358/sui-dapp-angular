@@ -19,356 +19,194 @@ import {
   suiBcs,
   toBase58,
   toBase64
-} from "./chunk-YEGMFPOD.js";
+} from "./chunk-CIEEBTQY.js";
 import {
   __objRest,
   __spreadProps,
   __spreadValues
 } from "./chunk-GOMI4DH3.js";
 
-// node_modules/@mysten/sui/dist/esm/version.js
-var PACKAGE_VERSION = "1.43.1";
-var TARGETED_RPC_VERSION = "1.60.0";
-
-// node_modules/@mysten/sui/dist/esm/experimental/mvr.js
-var __typeError = (msg) => {
-  throw TypeError(msg);
-};
-var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
-var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
-var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
-var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
-var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
-var _cache;
-var _url;
-var _pageSize;
-var _overrides;
-var _MvrClient_instances;
-var mvrPackageDataLoader_get;
-var mvrTypeDataLoader_get;
-var resolvePackages_fn;
-var resolveTypes_fn;
-var fetch_fn;
-var NAME_SEPARATOR = "/";
-var MVR_API_HEADER = {
-  "Mvr-Source": `@mysten/sui@${PACKAGE_VERSION}`
-};
-var MvrClient = class {
-  constructor({ cache, url, pageSize = 50, overrides }) {
-    __privateAdd(this, _MvrClient_instances);
-    __privateAdd(this, _cache);
-    __privateAdd(this, _url);
-    __privateAdd(this, _pageSize);
-    __privateAdd(this, _overrides);
-    __privateSet(this, _cache, cache);
-    __privateSet(this, _url, url);
-    __privateSet(this, _pageSize, pageSize);
-    __privateSet(this, _overrides, {
-      packages: overrides?.packages,
-      types: overrides?.types
-    });
-    validateOverrides(__privateGet(this, _overrides));
-  }
-  async resolvePackage({
-    package: name
-  }) {
-    if (!hasMvrName(name)) {
-      return {
-        package: name
-      };
-    }
-    const resolved = await __privateGet(this, _MvrClient_instances, mvrPackageDataLoader_get).load(name);
-    return {
-      package: resolved
-    };
-  }
-  async resolveType({
-    type
-  }) {
-    if (!hasMvrName(type)) {
-      return {
-        type
-      };
-    }
-    const mvrTypes = [...extractMvrTypes(type)];
-    const resolvedTypes = await __privateGet(this, _MvrClient_instances, mvrTypeDataLoader_get).loadMany(mvrTypes);
-    const typeMap = {};
-    for (let i = 0; i < mvrTypes.length; i++) {
-      const resolvedType = resolvedTypes[i];
-      if (resolvedType instanceof Error) {
-        throw resolvedType;
-      }
-      typeMap[mvrTypes[i]] = resolvedType;
-    }
-    return {
-      type: replaceMvrNames(type, typeMap)
-    };
-  }
-  async resolve({
-    types = [],
-    packages = []
-  }) {
-    const mvrTypes = /* @__PURE__ */ new Set();
-    for (const type of types ?? []) {
-      extractMvrTypes(type, mvrTypes);
-    }
-    const typesArray = [...mvrTypes];
-    const [resolvedTypes, resolvedPackages] = await Promise.all([
-      typesArray.length > 0 ? __privateGet(this, _MvrClient_instances, mvrTypeDataLoader_get).loadMany(typesArray) : [],
-      packages.length > 0 ? __privateGet(this, _MvrClient_instances, mvrPackageDataLoader_get).loadMany(packages) : []
-    ]);
-    const typeMap = __spreadValues({}, __privateGet(this, _overrides)?.types);
-    for (const [i, type] of typesArray.entries()) {
-      const resolvedType = resolvedTypes[i];
-      if (resolvedType instanceof Error) {
-        throw resolvedType;
-      }
-      typeMap[type] = resolvedType;
-    }
-    const replacedTypes = {};
-    for (const type of types ?? []) {
-      const resolvedType = replaceMvrNames(type, typeMap);
-      replacedTypes[type] = {
-        type: resolvedType
-      };
-    }
-    const replacedPackages = {};
-    for (const [i, pkg] of (packages ?? []).entries()) {
-      const resolvedPkg = __privateGet(this, _overrides)?.packages?.[pkg] ?? resolvedPackages[i];
-      if (resolvedPkg instanceof Error) {
-        throw resolvedPkg;
-      }
-      replacedPackages[pkg] = {
-        package: resolvedPkg
-      };
-    }
-    return {
-      types: replacedTypes,
-      packages: replacedPackages
-    };
-  }
-};
-_cache = /* @__PURE__ */ new WeakMap();
-_url = /* @__PURE__ */ new WeakMap();
-_pageSize = /* @__PURE__ */ new WeakMap();
-_overrides = /* @__PURE__ */ new WeakMap();
-_MvrClient_instances = /* @__PURE__ */ new WeakSet();
-mvrPackageDataLoader_get = function() {
-  return __privateGet(this, _cache).readSync(["#mvrPackageDataLoader", __privateGet(this, _url) ?? ""], () => {
-    const loader = new DataLoader(async (packages) => {
-      if (!__privateGet(this, _url)) {
-        throw new Error(
-          `MVR Api URL is not set for the current client (resolving ${packages.join(", ")})`
-        );
-      }
-      const resolved = await __privateMethod(this, _MvrClient_instances, resolvePackages_fn).call(this, packages);
-      return packages.map(
-        (pkg) => resolved[pkg] ?? new Error(`Failed to resolve package: ${pkg}`)
-      );
-    });
-    const overrides = __privateGet(this, _overrides)?.packages;
-    if (overrides) {
-      for (const [pkg, id] of Object.entries(overrides)) {
-        loader.prime(pkg, id);
-      }
-    }
-    return loader;
-  });
-};
-mvrTypeDataLoader_get = function() {
-  return __privateGet(this, _cache).readSync(["#mvrTypeDataLoader", __privateGet(this, _url) ?? ""], () => {
-    const loader = new DataLoader(async (types) => {
-      if (!__privateGet(this, _url)) {
-        throw new Error(
-          `MVR Api URL is not set for the current client (resolving ${types.join(", ")})`
-        );
-      }
-      const resolved = await __privateMethod(this, _MvrClient_instances, resolveTypes_fn).call(this, types);
-      return types.map((type) => resolved[type] ?? new Error(`Failed to resolve type: ${type}`));
-    });
-    const overrides = __privateGet(this, _overrides)?.types;
-    if (overrides) {
-      for (const [type, id] of Object.entries(overrides)) {
-        loader.prime(type, id);
-      }
-    }
-    return loader;
-  });
-};
-resolvePackages_fn = async function(packages) {
-  if (packages.length === 0) return {};
-  const batches = chunk(packages, __privateGet(this, _pageSize));
-  const results = {};
-  await Promise.all(
-    batches.map(async (batch) => {
-      const data = await __privateMethod(this, _MvrClient_instances, fetch_fn).call(this, "/v1/resolution/bulk", {
-        names: batch
-      });
-      if (!data?.resolution) return;
-      for (const pkg of Object.keys(data?.resolution)) {
-        const pkgData = data.resolution[pkg]?.package_id;
-        if (!pkgData) continue;
-        results[pkg] = pkgData;
-      }
-    })
-  );
-  return results;
-};
-resolveTypes_fn = async function(types) {
-  if (types.length === 0) return {};
-  const batches = chunk(types, __privateGet(this, _pageSize));
-  const results = {};
-  await Promise.all(
-    batches.map(async (batch) => {
-      const data = await __privateMethod(this, _MvrClient_instances, fetch_fn).call(this, "/v1/struct-definition/bulk", {
-        types: batch
-      });
-      if (!data?.resolution) return;
-      for (const type of Object.keys(data?.resolution)) {
-        const typeData = data.resolution[type]?.type_tag;
-        if (!typeData) continue;
-        results[type] = typeData;
-      }
-    })
-  );
-  return results;
-};
-fetch_fn = async function(url, body) {
-  if (!__privateGet(this, _url)) {
-    throw new Error("MVR Api URL is not set for the current client");
-  }
-  const response = await fetch(`${__privateGet(this, _url)}${url}`, {
-    method: "POST",
-    headers: __spreadValues({
-      "Content-Type": "application/json"
-    }, MVR_API_HEADER),
-    body: JSON.stringify(body)
-  });
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(`Failed to resolve types: ${errorBody?.message}`);
-  }
-  return response.json();
-};
-function validateOverrides(overrides) {
-  if (overrides?.packages) {
-    for (const [pkg, id] of Object.entries(overrides.packages)) {
-      if (!isValidNamedPackage(pkg)) {
-        throw new Error(`Invalid package name: ${pkg}`);
-      }
-      if (!isValidSuiAddress(normalizeSuiAddress(id))) {
-        throw new Error(`Invalid package ID: ${id}`);
-      }
-    }
-  }
-  if (overrides?.types) {
-    for (const [type, val] of Object.entries(overrides.types)) {
-      if (parseStructTag(type).typeParams.length > 0) {
-        throw new Error(
-          "Type overrides must be first-level only. If you want to supply generic types, just pass each type individually."
-        );
-      }
-      const parsedValue = parseStructTag(val);
-      if (!isValidSuiAddress(parsedValue.address)) {
-        throw new Error(`Invalid type: ${val}`);
-      }
-    }
-  }
+// node_modules/@mysten/sui/dist/esm/transactions/serializer.js
+var OBJECT_MODULE_NAME = "object";
+var ID_STRUCT_NAME = "ID";
+var STD_ASCII_MODULE_NAME = "ascii";
+var STD_ASCII_STRUCT_NAME = "String";
+var STD_UTF8_MODULE_NAME = "string";
+var STD_UTF8_STRUCT_NAME = "String";
+var STD_OPTION_MODULE_NAME = "option";
+var STD_OPTION_STRUCT_NAME = "Option";
+function isTxContext(param) {
+  const struct = typeof param.body === "object" && "datatype" in param.body ? param.body.datatype : null;
+  return !!struct && normalizeSuiAddress(struct.package) === normalizeSuiAddress("0x2") && struct.module === "tx_context" && struct.type === "TxContext";
 }
-function extractMvrTypes(type, types = /* @__PURE__ */ new Set()) {
-  if (typeof type === "string" && !hasMvrName(type)) return types;
-  const tag = isStructTag(type) ? type : parseStructTag(type);
-  if (hasMvrName(tag.address)) types.add(`${tag.address}::${tag.module}::${tag.name}`);
-  for (const param of tag.typeParams) {
-    extractMvrTypes(param, types);
-  }
-  return types;
-}
-function replaceMvrNames(tag, typeCache) {
-  const type = isStructTag(tag) ? tag : parseStructTag(tag);
-  const typeTag = `${type.address}::${type.module}::${type.name}`;
-  const cacheHit = typeCache[typeTag];
-  return normalizeStructTag(__spreadProps(__spreadValues({}, type), {
-    address: cacheHit ? cacheHit.split("::")[0] : type.address,
-    typeParams: type.typeParams.map((param) => replaceMvrNames(param, typeCache))
-  }));
-}
-function hasMvrName(nameOrType) {
-  return nameOrType.includes(NAME_SEPARATOR) || nameOrType.includes("@") || nameOrType.includes(".sui");
-}
-function isStructTag(type) {
-  return typeof type === "object" && "address" in type && "module" in type && "name" in type && "typeParams" in type;
-}
-function findNamesInTransaction(builder) {
-  const packages = /* @__PURE__ */ new Set();
-  const types = /* @__PURE__ */ new Set();
-  for (const command of builder.commands) {
-    switch (command.$kind) {
-      case "MakeMoveVec":
-        if (command.MakeMoveVec.type) {
-          getNamesFromTypeList([command.MakeMoveVec.type]).forEach((type) => {
-            types.add(type);
-          });
-        }
-        break;
-      case "MoveCall":
-        const moveCall = command.MoveCall;
-        const pkg = moveCall.package.split("::")[0];
-        if (hasMvrName(pkg)) {
-          if (!isValidNamedPackage(pkg)) throw new Error(`Invalid package name: ${pkg}`);
-          packages.add(pkg);
-        }
-        getNamesFromTypeList(moveCall.typeArguments ?? []).forEach((type) => {
-          types.add(type);
-        });
-        break;
+function getPureBcsSchema(typeSignature) {
+  if (typeof typeSignature === "string") {
+    switch (typeSignature) {
+      case "address":
+        return suiBcs.Address;
+      case "bool":
+        return suiBcs.Bool;
+      case "u8":
+        return suiBcs.U8;
+      case "u16":
+        return suiBcs.U16;
+      case "u32":
+        return suiBcs.U32;
+      case "u64":
+        return suiBcs.U64;
+      case "u128":
+        return suiBcs.U128;
+      case "u256":
+        return suiBcs.U256;
       default:
-        break;
+        throw new Error(`Unknown type signature ${typeSignature}`);
     }
+  }
+  if ("vector" in typeSignature) {
+    if (typeSignature.vector === "u8") {
+      return suiBcs.byteVector().transform({
+        input: (val) => typeof val === "string" ? new TextEncoder().encode(val) : val,
+        output: (val) => val
+      });
+    }
+    const type = getPureBcsSchema(typeSignature.vector);
+    return type ? suiBcs.vector(type) : null;
+  }
+  if ("datatype" in typeSignature) {
+    const pkg = normalizeSuiAddress(typeSignature.datatype.package);
+    if (pkg === normalizeSuiAddress(MOVE_STDLIB_ADDRESS)) {
+      if (typeSignature.datatype.module === STD_ASCII_MODULE_NAME && typeSignature.datatype.type === STD_ASCII_STRUCT_NAME) {
+        return suiBcs.String;
+      }
+      if (typeSignature.datatype.module === STD_UTF8_MODULE_NAME && typeSignature.datatype.type === STD_UTF8_STRUCT_NAME) {
+        return suiBcs.String;
+      }
+      if (typeSignature.datatype.module === STD_OPTION_MODULE_NAME && typeSignature.datatype.type === STD_OPTION_STRUCT_NAME) {
+        const type = getPureBcsSchema(typeSignature.datatype.typeParameters[0]);
+        return type ? suiBcs.vector(type) : null;
+      }
+    }
+    if (pkg === normalizeSuiAddress(SUI_FRAMEWORK_ADDRESS) && typeSignature.datatype.module === OBJECT_MODULE_NAME && typeSignature.datatype.type === ID_STRUCT_NAME) {
+      return suiBcs.Address;
+    }
+  }
+  return null;
+}
+function normalizedTypeToMoveTypeSignature(type) {
+  if (typeof type === "object" && "Reference" in type) {
+    return {
+      ref: "&",
+      body: normalizedTypeToMoveTypeSignatureBody(type.Reference)
+    };
+  }
+  if (typeof type === "object" && "MutableReference" in type) {
+    return {
+      ref: "&mut",
+      body: normalizedTypeToMoveTypeSignatureBody(type.MutableReference)
+    };
   }
   return {
-    packages: [...packages],
-    types: [...types]
+    ref: null,
+    body: normalizedTypeToMoveTypeSignatureBody(type)
   };
 }
-function replaceNames(builder, resolved) {
-  for (const command of builder.commands) {
-    if (command.MakeMoveVec?.type) {
-      if (!hasMvrName(command.MakeMoveVec.type)) continue;
-      if (!resolved.types[command.MakeMoveVec.type])
-        throw new Error(`No resolution found for type: ${command.MakeMoveVec.type}`);
-      command.MakeMoveVec.type = resolved.types[command.MakeMoveVec.type].type;
-    }
-    const tx = command.MoveCall;
-    if (!tx) continue;
-    const nameParts = tx.package.split("::");
-    const name = nameParts[0];
-    if (hasMvrName(name) && !resolved.packages[name])
-      throw new Error(`No address found for package: ${name}`);
-    if (hasMvrName(name)) {
-      nameParts[0] = resolved.packages[name].package;
-      tx.package = nameParts.join("::");
-    }
-    const types = tx.typeArguments;
-    if (!types) continue;
-    for (let i = 0; i < types.length; i++) {
-      if (!hasMvrName(types[i])) continue;
-      if (!resolved.types[types[i]]) throw new Error(`No resolution found for type: ${types[i]}`);
-      types[i] = resolved.types[types[i]].type;
-    }
-    tx.typeArguments = types;
-  }
-}
-function getNamesFromTypeList(types) {
-  const names = /* @__PURE__ */ new Set();
-  for (const type of types) {
-    if (hasMvrName(type)) {
-      if (!isValidNamedType(type)) throw new Error(`Invalid type with names: ${type}`);
-      names.add(type);
+function normalizedTypeToMoveTypeSignatureBody(type) {
+  if (typeof type === "string") {
+    switch (type) {
+      case "Address":
+        return "address";
+      case "Bool":
+        return "bool";
+      case "U8":
+        return "u8";
+      case "U16":
+        return "u16";
+      case "U32":
+        return "u32";
+      case "U64":
+        return "u64";
+      case "U128":
+        return "u128";
+      case "U256":
+        return "u256";
+      default:
+        throw new Error(`Unexpected type ${type}`);
     }
   }
-  return names;
+  if ("Vector" in type) {
+    return { vector: normalizedTypeToMoveTypeSignatureBody(type.Vector) };
+  }
+  if ("Struct" in type) {
+    return {
+      datatype: {
+        package: type.Struct.address,
+        module: type.Struct.module,
+        type: type.Struct.name,
+        typeParameters: type.Struct.typeArguments.map(normalizedTypeToMoveTypeSignatureBody)
+      }
+    };
+  }
+  if ("TypeParameter" in type) {
+    return { typeParameter: type.TypeParameter };
+  }
+  throw new Error(`Unexpected type ${JSON.stringify(type)}`);
 }
+
+// node_modules/@mysten/sui/dist/esm/transactions/Inputs.js
+function Pure(data) {
+  return {
+    $kind: "Pure",
+    Pure: {
+      bytes: data instanceof Uint8Array ? toBase64(data) : data.toBase64()
+    }
+  };
+}
+var Inputs = {
+  Pure,
+  ObjectRef({ objectId, digest, version }) {
+    return {
+      $kind: "Object",
+      Object: {
+        $kind: "ImmOrOwnedObject",
+        ImmOrOwnedObject: {
+          digest,
+          version,
+          objectId: normalizeSuiAddress(objectId)
+        }
+      }
+    };
+  },
+  SharedObjectRef({
+    objectId,
+    mutable,
+    initialSharedVersion
+  }) {
+    return {
+      $kind: "Object",
+      Object: {
+        $kind: "SharedObject",
+        SharedObject: {
+          mutable,
+          initialSharedVersion,
+          objectId: normalizeSuiAddress(objectId)
+        }
+      }
+    };
+  },
+  ReceivingRef({ objectId, digest, version }) {
+    return {
+      $kind: "Object",
+      Object: {
+        $kind: "Receiving",
+        Receiving: {
+          digest,
+          version,
+          objectId: normalizeSuiAddress(objectId)
+        }
+      }
+    };
+  }
+};
 
 // node_modules/valibot/dist/index.js
 var store;
@@ -1810,730 +1648,6 @@ function parseV1TransactionArgument(arg) {
   }
 }
 
-// node_modules/@mysten/sui/dist/esm/transactions/data/v2.js
-function enumUnion(options) {
-  return union(
-    Object.entries(options).map(([key, value]) => object({ [key]: value }))
-  );
-}
-var Argument = enumUnion({
-  GasCoin: literal(true),
-  Input: pipe(number(), integer()),
-  Result: pipe(number(), integer()),
-  NestedResult: tuple([pipe(number(), integer()), pipe(number(), integer())])
-});
-var GasData = object({
-  budget: nullable(JsonU64),
-  price: nullable(JsonU64),
-  owner: nullable(SuiAddress),
-  payment: nullable(array(ObjectRefSchema))
-});
-var ProgrammableMoveCall = object({
-  package: ObjectID,
-  module: string(),
-  function: string(),
-  // snake case in rust
-  typeArguments: array(string()),
-  arguments: array(Argument)
-});
-var $Intent2 = object({
-  name: string(),
-  inputs: record(string(), union([Argument, array(Argument)])),
-  data: record(string(), unknown())
-});
-var Command = enumUnion({
-  MoveCall: ProgrammableMoveCall,
-  TransferObjects: object({
-    objects: array(Argument),
-    address: Argument
-  }),
-  SplitCoins: object({
-    coin: Argument,
-    amounts: array(Argument)
-  }),
-  MergeCoins: object({
-    destination: Argument,
-    sources: array(Argument)
-  }),
-  Publish: object({
-    modules: array(BCSBytes),
-    dependencies: array(ObjectID)
-  }),
-  MakeMoveVec: object({
-    type: nullable(string()),
-    elements: array(Argument)
-  }),
-  Upgrade: object({
-    modules: array(BCSBytes),
-    dependencies: array(ObjectID),
-    package: ObjectID,
-    ticket: Argument
-  }),
-  $Intent: $Intent2
-});
-var ObjectArg2 = enumUnion({
-  ImmOrOwnedObject: ObjectRefSchema,
-  SharedObject: object({
-    objectId: ObjectID,
-    // snake case in rust
-    initialSharedVersion: JsonU64,
-    mutable: boolean()
-  }),
-  Receiving: ObjectRefSchema
-});
-var CallArg = enumUnion({
-  Object: ObjectArg2,
-  Pure: object({
-    bytes: BCSBytes
-  }),
-  UnresolvedPure: object({
-    value: unknown()
-  }),
-  UnresolvedObject: object({
-    objectId: ObjectID,
-    version: optional(nullable(JsonU64)),
-    digest: optional(nullable(string())),
-    initialSharedVersion: optional(nullable(JsonU64)),
-    mutable: optional(nullable(boolean()))
-  })
-});
-var TransactionExpiration3 = enumUnion({
-  None: literal(true),
-  Epoch: JsonU64
-});
-var SerializedTransactionDataV2Schema = object({
-  version: literal(2),
-  sender: nullish(SuiAddress),
-  expiration: nullish(TransactionExpiration3),
-  gasData: GasData,
-  inputs: array(CallArg),
-  commands: array(Command),
-  digest: optional(nullable(string()))
-});
-
-// node_modules/@mysten/sui/dist/esm/transactions/Inputs.js
-function Pure(data) {
-  return {
-    $kind: "Pure",
-    Pure: {
-      bytes: data instanceof Uint8Array ? toBase64(data) : data.toBase64()
-    }
-  };
-}
-var Inputs = {
-  Pure,
-  ObjectRef({ objectId, digest, version }) {
-    return {
-      $kind: "Object",
-      Object: {
-        $kind: "ImmOrOwnedObject",
-        ImmOrOwnedObject: {
-          digest,
-          version,
-          objectId: normalizeSuiAddress(objectId)
-        }
-      }
-    };
-  },
-  SharedObjectRef({
-    objectId,
-    mutable,
-    initialSharedVersion
-  }) {
-    return {
-      $kind: "Object",
-      Object: {
-        $kind: "SharedObject",
-        SharedObject: {
-          mutable,
-          initialSharedVersion,
-          objectId: normalizeSuiAddress(objectId)
-        }
-      }
-    };
-  },
-  ReceivingRef({ objectId, digest, version }) {
-    return {
-      $kind: "Object",
-      Object: {
-        $kind: "Receiving",
-        Receiving: {
-          digest,
-          version,
-          objectId: normalizeSuiAddress(objectId)
-        }
-      }
-    };
-  }
-};
-
-// node_modules/@mysten/sui/dist/esm/transactions/serializer.js
-var OBJECT_MODULE_NAME = "object";
-var ID_STRUCT_NAME = "ID";
-var STD_ASCII_MODULE_NAME = "ascii";
-var STD_ASCII_STRUCT_NAME = "String";
-var STD_UTF8_MODULE_NAME = "string";
-var STD_UTF8_STRUCT_NAME = "String";
-var STD_OPTION_MODULE_NAME = "option";
-var STD_OPTION_STRUCT_NAME = "Option";
-function isTxContext(param) {
-  const struct = typeof param.body === "object" && "datatype" in param.body ? param.body.datatype : null;
-  return !!struct && normalizeSuiAddress(struct.package) === normalizeSuiAddress("0x2") && struct.module === "tx_context" && struct.type === "TxContext";
-}
-function getPureBcsSchema(typeSignature) {
-  if (typeof typeSignature === "string") {
-    switch (typeSignature) {
-      case "address":
-        return suiBcs.Address;
-      case "bool":
-        return suiBcs.Bool;
-      case "u8":
-        return suiBcs.U8;
-      case "u16":
-        return suiBcs.U16;
-      case "u32":
-        return suiBcs.U32;
-      case "u64":
-        return suiBcs.U64;
-      case "u128":
-        return suiBcs.U128;
-      case "u256":
-        return suiBcs.U256;
-      default:
-        throw new Error(`Unknown type signature ${typeSignature}`);
-    }
-  }
-  if ("vector" in typeSignature) {
-    if (typeSignature.vector === "u8") {
-      return suiBcs.byteVector().transform({
-        input: (val) => typeof val === "string" ? new TextEncoder().encode(val) : val,
-        output: (val) => val
-      });
-    }
-    const type = getPureBcsSchema(typeSignature.vector);
-    return type ? suiBcs.vector(type) : null;
-  }
-  if ("datatype" in typeSignature) {
-    const pkg = normalizeSuiAddress(typeSignature.datatype.package);
-    if (pkg === normalizeSuiAddress(MOVE_STDLIB_ADDRESS)) {
-      if (typeSignature.datatype.module === STD_ASCII_MODULE_NAME && typeSignature.datatype.type === STD_ASCII_STRUCT_NAME) {
-        return suiBcs.String;
-      }
-      if (typeSignature.datatype.module === STD_UTF8_MODULE_NAME && typeSignature.datatype.type === STD_UTF8_STRUCT_NAME) {
-        return suiBcs.String;
-      }
-      if (typeSignature.datatype.module === STD_OPTION_MODULE_NAME && typeSignature.datatype.type === STD_OPTION_STRUCT_NAME) {
-        const type = getPureBcsSchema(typeSignature.datatype.typeParameters[0]);
-        return type ? suiBcs.vector(type) : null;
-      }
-    }
-    if (pkg === normalizeSuiAddress(SUI_FRAMEWORK_ADDRESS) && typeSignature.datatype.module === OBJECT_MODULE_NAME && typeSignature.datatype.type === ID_STRUCT_NAME) {
-      return suiBcs.Address;
-    }
-  }
-  return null;
-}
-function normalizedTypeToMoveTypeSignature(type) {
-  if (typeof type === "object" && "Reference" in type) {
-    return {
-      ref: "&",
-      body: normalizedTypeToMoveTypeSignatureBody(type.Reference)
-    };
-  }
-  if (typeof type === "object" && "MutableReference" in type) {
-    return {
-      ref: "&mut",
-      body: normalizedTypeToMoveTypeSignatureBody(type.MutableReference)
-    };
-  }
-  return {
-    ref: null,
-    body: normalizedTypeToMoveTypeSignatureBody(type)
-  };
-}
-function normalizedTypeToMoveTypeSignatureBody(type) {
-  if (typeof type === "string") {
-    switch (type) {
-      case "Address":
-        return "address";
-      case "Bool":
-        return "bool";
-      case "U8":
-        return "u8";
-      case "U16":
-        return "u16";
-      case "U32":
-        return "u32";
-      case "U64":
-        return "u64";
-      case "U128":
-        return "u128";
-      case "U256":
-        return "u256";
-      default:
-        throw new Error(`Unexpected type ${type}`);
-    }
-  }
-  if ("Vector" in type) {
-    return { vector: normalizedTypeToMoveTypeSignatureBody(type.Vector) };
-  }
-  if ("Struct" in type) {
-    return {
-      datatype: {
-        package: type.Struct.address,
-        module: type.Struct.module,
-        type: type.Struct.name,
-        typeParameters: type.Struct.typeArguments.map(normalizedTypeToMoveTypeSignatureBody)
-      }
-    };
-  }
-  if ("TypeParameter" in type) {
-    return { typeParameter: type.TypeParameter };
-  }
-  throw new Error(`Unexpected type ${JSON.stringify(type)}`);
-}
-
-// node_modules/@mysten/sui/dist/esm/jsonRpc/json-rpc-resolver.js
-var MAX_OBJECTS_PER_FETCH = 50;
-var GAS_SAFE_OVERHEAD = 1000n;
-var MAX_GAS = 5e10;
-function jsonRpcClientResolveTransactionPlugin(client) {
-  return async function resolveTransactionData(transactionData, options, next) {
-    await normalizeInputs(transactionData, client);
-    await resolveObjectReferences(transactionData, client);
-    if (!options.onlyTransactionKind) {
-      await setGasPrice(transactionData, client);
-      await setGasBudget(transactionData, client);
-      await setGasPayment(transactionData, client);
-    }
-    return await next();
-  };
-}
-async function setGasPrice(transactionData, client) {
-  if (!transactionData.gasConfig.price) {
-    transactionData.gasConfig.price = String(await client.getReferenceGasPrice());
-  }
-}
-async function setGasBudget(transactionData, client) {
-  if (transactionData.gasConfig.budget) {
-    return;
-  }
-  const dryRunResult = await client.dryRunTransactionBlock({
-    transactionBlock: transactionData.build({
-      overrides: {
-        gasData: {
-          budget: String(MAX_GAS),
-          payment: []
-        }
-      }
-    })
-  });
-  if (dryRunResult.effects.status.status !== "success") {
-    throw new Error(
-      `Dry run failed, could not automatically determine a budget: ${dryRunResult.effects.status.error}`,
-      { cause: dryRunResult }
-    );
-  }
-  const safeOverhead = GAS_SAFE_OVERHEAD * BigInt(transactionData.gasConfig.price || 1n);
-  const baseComputationCostWithOverhead = BigInt(dryRunResult.effects.gasUsed.computationCost) + safeOverhead;
-  const gasBudget = baseComputationCostWithOverhead + BigInt(dryRunResult.effects.gasUsed.storageCost) - BigInt(dryRunResult.effects.gasUsed.storageRebate);
-  transactionData.gasConfig.budget = String(
-    gasBudget > baseComputationCostWithOverhead ? gasBudget : baseComputationCostWithOverhead
-  );
-}
-async function setGasPayment(transactionData, client) {
-  if (!transactionData.gasConfig.payment) {
-    const coins = await client.getCoins({
-      owner: transactionData.gasConfig.owner || transactionData.sender,
-      coinType: SUI_TYPE_ARG
-    });
-    const paymentCoins = coins.data.filter((coin) => {
-      const matchingInput = transactionData.inputs.find((input) => {
-        if (input.Object?.ImmOrOwnedObject) {
-          return coin.coinObjectId === input.Object.ImmOrOwnedObject.objectId;
-        }
-        return false;
-      });
-      return !matchingInput;
-    }).map((coin) => ({
-      objectId: coin.coinObjectId,
-      digest: coin.digest,
-      version: coin.version
-    }));
-    if (!paymentCoins.length) {
-      throw new Error("No valid gas coins found for the transaction.");
-    }
-    transactionData.gasConfig.payment = paymentCoins.map(
-      (payment) => parse(ObjectRefSchema, payment)
-    );
-  }
-}
-async function resolveObjectReferences(transactionData, client) {
-  const objectsToResolve = transactionData.inputs.filter((input) => {
-    return input.UnresolvedObject && !(input.UnresolvedObject.version || input.UnresolvedObject?.initialSharedVersion);
-  });
-  const dedupedIds = [
-    ...new Set(
-      objectsToResolve.map((input) => normalizeSuiObjectId(input.UnresolvedObject.objectId))
-    )
-  ];
-  const objectChunks = dedupedIds.length ? chunk(dedupedIds, MAX_OBJECTS_PER_FETCH) : [];
-  const resolved = (await Promise.all(
-    objectChunks.map(
-      (chunk2) => client.multiGetObjects({
-        ids: chunk2,
-        options: { showOwner: true }
-      })
-    )
-  )).flat();
-  const responsesById = new Map(
-    dedupedIds.map((id, index) => {
-      return [id, resolved[index]];
-    })
-  );
-  const invalidObjects = Array.from(responsesById).filter(([_, obj]) => obj.error).map(([_, obj]) => JSON.stringify(obj.error));
-  if (invalidObjects.length) {
-    throw new Error(`The following input objects are invalid: ${invalidObjects.join(", ")}`);
-  }
-  const objects = resolved.map((object2) => {
-    if (object2.error || !object2.data) {
-      throw new Error(`Failed to fetch object: ${object2.error}`);
-    }
-    const owner = object2.data.owner;
-    const initialSharedVersion = owner && typeof owner === "object" ? "Shared" in owner ? owner.Shared.initial_shared_version : "ConsensusAddressOwner" in owner ? owner.ConsensusAddressOwner.start_version : null : null;
-    return {
-      objectId: object2.data.objectId,
-      digest: object2.data.digest,
-      version: object2.data.version,
-      initialSharedVersion
-    };
-  });
-  const objectsById = new Map(
-    dedupedIds.map((id, index) => {
-      return [id, objects[index]];
-    })
-  );
-  for (const [index, input] of transactionData.inputs.entries()) {
-    if (!input.UnresolvedObject) {
-      continue;
-    }
-    let updated;
-    const id = normalizeSuiAddress(input.UnresolvedObject.objectId);
-    const object2 = objectsById.get(id);
-    if (input.UnresolvedObject.initialSharedVersion ?? object2?.initialSharedVersion) {
-      updated = Inputs.SharedObjectRef({
-        objectId: id,
-        initialSharedVersion: input.UnresolvedObject.initialSharedVersion || object2?.initialSharedVersion,
-        mutable: input.UnresolvedObject.mutable || isUsedAsMutable(transactionData, index)
-      });
-    } else if (isUsedAsReceiving(transactionData, index)) {
-      updated = Inputs.ReceivingRef(
-        {
-          objectId: id,
-          digest: input.UnresolvedObject.digest ?? object2?.digest,
-          version: input.UnresolvedObject.version ?? object2?.version
-        }
-      );
-    }
-    transactionData.inputs[transactionData.inputs.indexOf(input)] = updated ?? Inputs.ObjectRef({
-      objectId: id,
-      digest: input.UnresolvedObject.digest ?? object2?.digest,
-      version: input.UnresolvedObject.version ?? object2?.version
-    });
-  }
-}
-async function normalizeInputs(transactionData, client) {
-  const { inputs, commands } = transactionData;
-  const moveCallsToResolve = [];
-  const moveFunctionsToResolve = /* @__PURE__ */ new Set();
-  commands.forEach((command) => {
-    if (command.MoveCall) {
-      if (command.MoveCall._argumentTypes) {
-        return;
-      }
-      const inputs2 = command.MoveCall.arguments.map((arg) => {
-        if (arg.$kind === "Input") {
-          return transactionData.inputs[arg.Input];
-        }
-        return null;
-      });
-      const needsResolution = inputs2.some(
-        (input) => input?.UnresolvedPure || input?.UnresolvedObject && typeof input?.UnresolvedObject.mutable !== "boolean"
-      );
-      if (needsResolution) {
-        const functionName = `${command.MoveCall.package}::${command.MoveCall.module}::${command.MoveCall.function}`;
-        moveFunctionsToResolve.add(functionName);
-        moveCallsToResolve.push(command.MoveCall);
-      }
-    }
-  });
-  const moveFunctionParameters = /* @__PURE__ */ new Map();
-  if (moveFunctionsToResolve.size > 0) {
-    await Promise.all(
-      [...moveFunctionsToResolve].map(async (functionName) => {
-        const [packageId, moduleId, functionId] = functionName.split("::");
-        const def = await client.getNormalizedMoveFunction({
-          package: packageId,
-          module: moduleId,
-          function: functionId
-        });
-        moveFunctionParameters.set(
-          functionName,
-          def.parameters.map((param) => normalizedTypeToMoveTypeSignature(param))
-        );
-      })
-    );
-  }
-  if (moveCallsToResolve.length) {
-    await Promise.all(
-      moveCallsToResolve.map(async (moveCall) => {
-        const parameters = moveFunctionParameters.get(
-          `${moveCall.package}::${moveCall.module}::${moveCall.function}`
-        );
-        if (!parameters) {
-          return;
-        }
-        const hasTxContext = parameters.length > 0 && isTxContext(parameters.at(-1));
-        const params = hasTxContext ? parameters.slice(0, parameters.length - 1) : parameters;
-        moveCall._argumentTypes = params;
-      })
-    );
-  }
-  commands.forEach((command) => {
-    if (!command.MoveCall) {
-      return;
-    }
-    const moveCall = command.MoveCall;
-    const fnName = `${moveCall.package}::${moveCall.module}::${moveCall.function}`;
-    const params = moveCall._argumentTypes;
-    if (!params) {
-      return;
-    }
-    if (params.length !== command.MoveCall.arguments.length) {
-      throw new Error(`Incorrect number of arguments for ${fnName}`);
-    }
-    params.forEach((param, i) => {
-      const arg = moveCall.arguments[i];
-      if (arg.$kind !== "Input") return;
-      const input = inputs[arg.Input];
-      if (!input.UnresolvedPure && !input.UnresolvedObject) {
-        return;
-      }
-      const inputValue = input.UnresolvedPure?.value ?? input.UnresolvedObject?.objectId;
-      const schema = getPureBcsSchema(param.body);
-      if (schema) {
-        arg.type = "pure";
-        inputs[inputs.indexOf(input)] = Inputs.Pure(schema.serialize(inputValue));
-        return;
-      }
-      if (typeof inputValue !== "string") {
-        throw new Error(
-          `Expect the argument to be an object id string, got ${JSON.stringify(
-            inputValue,
-            null,
-            2
-          )}`
-        );
-      }
-      arg.type = "object";
-      const unresolvedObject = input.UnresolvedPure ? {
-        $kind: "UnresolvedObject",
-        UnresolvedObject: {
-          objectId: inputValue
-        }
-      } : input;
-      inputs[arg.Input] = unresolvedObject;
-    });
-  });
-}
-function isUsedAsMutable(transactionData, index) {
-  let usedAsMutable = false;
-  transactionData.getInputUses(index, (arg, tx) => {
-    if (tx.MoveCall && tx.MoveCall._argumentTypes) {
-      const argIndex = tx.MoveCall.arguments.indexOf(arg);
-      usedAsMutable = tx.MoveCall._argumentTypes[argIndex].ref !== "&" || usedAsMutable;
-    }
-    if (tx.$kind === "MakeMoveVec" || tx.$kind === "MergeCoins" || tx.$kind === "SplitCoins" || tx.$kind === "TransferObjects") {
-      usedAsMutable = true;
-    }
-  });
-  return usedAsMutable;
-}
-function isUsedAsReceiving(transactionData, index) {
-  let usedAsReceiving = false;
-  transactionData.getInputUses(index, (arg, tx) => {
-    if (tx.MoveCall && tx.MoveCall._argumentTypes) {
-      const argIndex = tx.MoveCall.arguments.indexOf(arg);
-      usedAsReceiving = isReceivingType(tx.MoveCall._argumentTypes[argIndex]) || usedAsReceiving;
-    }
-  });
-  return usedAsReceiving;
-}
-function isReceivingType(type) {
-  if (typeof type.body !== "object" || !("datatype" in type.body)) {
-    return false;
-  }
-  return type.body.datatype.package === "0x2" && type.body.datatype.module === "transfer" && type.body.datatype.type === "Receiving";
-}
-
-// node_modules/@mysten/sui/dist/esm/transactions/resolve.js
-function needsTransactionResolution(data, options) {
-  if (data.inputs.some((input) => {
-    return input.UnresolvedObject || input.UnresolvedPure;
-  })) {
-    return true;
-  }
-  if (!options.onlyTransactionKind) {
-    if (!data.gasConfig.price || !data.gasConfig.budget || !data.gasConfig.payment) {
-      return true;
-    }
-  }
-  return false;
-}
-async function resolveTransactionPlugin(transactionData, options, next) {
-  normalizeRawArguments(transactionData);
-  if (!needsTransactionResolution(transactionData, options)) {
-    await validate(transactionData);
-    return next();
-  }
-  const client = getClient(options);
-  const plugin = client.core?.resolveTransactionPlugin() ?? jsonRpcClientResolveTransactionPlugin(client);
-  return plugin(transactionData, options, async () => {
-    await validate(transactionData);
-    await next();
-  });
-}
-function validate(transactionData) {
-  transactionData.inputs.forEach((input, index) => {
-    if (input.$kind !== "Object" && input.$kind !== "Pure") {
-      throw new Error(
-        `Input at index ${index} has not been resolved.  Expected a Pure or Object input, but found ${JSON.stringify(
-          input
-        )}`
-      );
-    }
-  });
-}
-function getClient(options) {
-  if (!options.client) {
-    throw new Error(
-      `No sui client passed to Transaction#build, but transaction data was not sufficient to build offline.`
-    );
-  }
-  return options.client;
-}
-function normalizeRawArguments(transactionData) {
-  for (const command of transactionData.commands) {
-    switch (command.$kind) {
-      case "SplitCoins":
-        command.SplitCoins.amounts.forEach((amount) => {
-          normalizeRawArgument(amount, suiBcs.U64, transactionData);
-        });
-        break;
-      case "TransferObjects":
-        normalizeRawArgument(command.TransferObjects.address, suiBcs.Address, transactionData);
-        break;
-    }
-  }
-}
-function normalizeRawArgument(arg, schema, transactionData) {
-  if (arg.$kind !== "Input") {
-    return;
-  }
-  const input = transactionData.inputs[arg.Input];
-  if (input.$kind !== "UnresolvedPure") {
-    return;
-  }
-  transactionData.inputs[arg.Input] = Inputs.Pure(schema.serialize(input.UnresolvedPure.value));
-}
-
-// node_modules/@mysten/sui/dist/esm/transactions/object.js
-function createObjectMethods(makeObject) {
-  function object2(value) {
-    return makeObject(value);
-  }
-  object2.system = (options) => {
-    const mutable = options?.mutable;
-    if (mutable !== void 0) {
-      return object2(
-        Inputs.SharedObjectRef({
-          objectId: "0x5",
-          initialSharedVersion: 1,
-          mutable
-        })
-      );
-    }
-    return object2({
-      $kind: "UnresolvedObject",
-      UnresolvedObject: {
-        objectId: "0x5",
-        initialSharedVersion: 1
-      }
-    });
-  };
-  object2.clock = () => object2(
-    Inputs.SharedObjectRef({
-      objectId: "0x6",
-      initialSharedVersion: 1,
-      mutable: false
-    })
-  );
-  object2.random = () => object2({
-    $kind: "UnresolvedObject",
-    UnresolvedObject: {
-      objectId: "0x8",
-      mutable: false
-    }
-  });
-  object2.denyList = (options) => {
-    return object2({
-      $kind: "UnresolvedObject",
-      UnresolvedObject: {
-        objectId: "0x403",
-        mutable: options?.mutable
-      }
-    });
-  };
-  object2.option = ({ type, value }) => (tx) => tx.moveCall({
-    typeArguments: [type],
-    target: `0x1::option::${value === null ? "none" : "some"}`,
-    arguments: value === null ? [] : [tx.object(value)]
-  });
-  return object2;
-}
-
-// node_modules/@mysten/sui/dist/esm/transactions/pure.js
-function createPure(makePure) {
-  function pure(typeOrSerializedValue, value) {
-    if (typeof typeOrSerializedValue === "string") {
-      return makePure(pureBcsSchemaFromTypeName(typeOrSerializedValue).serialize(value));
-    }
-    if (typeOrSerializedValue instanceof Uint8Array || isSerializedBcs(typeOrSerializedValue)) {
-      return makePure(typeOrSerializedValue);
-    }
-    throw new Error("tx.pure must be called either a bcs type name, or a serialized bcs value");
-  }
-  pure.u8 = (value) => makePure(suiBcs.U8.serialize(value));
-  pure.u16 = (value) => makePure(suiBcs.U16.serialize(value));
-  pure.u32 = (value) => makePure(suiBcs.U32.serialize(value));
-  pure.u64 = (value) => makePure(suiBcs.U64.serialize(value));
-  pure.u128 = (value) => makePure(suiBcs.U128.serialize(value));
-  pure.u256 = (value) => makePure(suiBcs.U256.serialize(value));
-  pure.bool = (value) => makePure(suiBcs.Bool.serialize(value));
-  pure.string = (value) => makePure(suiBcs.String.serialize(value));
-  pure.address = (value) => makePure(suiBcs.Address.serialize(value));
-  pure.id = pure.address;
-  pure.vector = (type, value) => {
-    return makePure(
-      suiBcs.vector(pureBcsSchemaFromTypeName(type)).serialize(value)
-    );
-  };
-  pure.option = (type, value) => {
-    return makePure(suiBcs.option(pureBcsSchemaFromTypeName(type)).serialize(value));
-  };
-  return pure;
-}
-
 // node_modules/@mysten/sui/dist/esm/transactions/hash.js
 function hashTypedData(typeTag, data) {
   const typeTagBytes = Array.from(`${typeTag}::`).map((e) => e.charCodeAt(0));
@@ -2882,8 +1996,82 @@ function getIdFromCallArg(arg) {
   }
   return void 0;
 }
+function isArgument(value) {
+  return is(ArgumentSchema, value);
+}
 
 // node_modules/@mysten/sui/dist/esm/experimental/cache.js
+var __typeError = (msg) => {
+  throw TypeError(msg);
+};
+var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
+var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
+var _prefix;
+var _cache;
+var _ClientCache = class _ClientCache2 {
+  constructor({ prefix, cache } = {}) {
+    __privateAdd(this, _prefix);
+    __privateAdd(this, _cache);
+    __privateSet(this, _prefix, prefix ?? []);
+    __privateSet(this, _cache, cache ?? /* @__PURE__ */ new Map());
+  }
+  read(key, load) {
+    const cacheKey = [__privateGet(this, _prefix), ...key].join(":");
+    if (__privateGet(this, _cache).has(cacheKey)) {
+      return __privateGet(this, _cache).get(cacheKey);
+    }
+    const result = load();
+    __privateGet(this, _cache).set(cacheKey, result);
+    if (typeof result === "object" && result !== null && "then" in result) {
+      return Promise.resolve(result).then((v) => {
+        __privateGet(this, _cache).set(cacheKey, v);
+        return v;
+      }).catch((err) => {
+        __privateGet(this, _cache).delete(cacheKey);
+        throw err;
+      });
+    }
+    return result;
+  }
+  readSync(key, load) {
+    const cacheKey = [__privateGet(this, _prefix), ...key].join(":");
+    if (__privateGet(this, _cache).has(cacheKey)) {
+      return __privateGet(this, _cache).get(cacheKey);
+    }
+    const result = load();
+    __privateGet(this, _cache).set(cacheKey, result);
+    return result;
+  }
+  clear(prefix) {
+    const prefixKey = [...__privateGet(this, _prefix), ...prefix ?? []].join(":");
+    if (!prefixKey) {
+      __privateGet(this, _cache).clear();
+      return;
+    }
+    for (const key of __privateGet(this, _cache).keys()) {
+      if (key.startsWith(prefixKey)) {
+        __privateGet(this, _cache).delete(key);
+      }
+    }
+  }
+  scope(prefix) {
+    return new _ClientCache2({
+      prefix: [...__privateGet(this, _prefix), ...Array.isArray(prefix) ? prefix : [prefix]],
+      cache: __privateGet(this, _cache)
+    });
+  }
+};
+_prefix = /* @__PURE__ */ new WeakMap();
+_cache = /* @__PURE__ */ new WeakMap();
+var ClientCache = _ClientCache;
+
+// node_modules/@mysten/sui/dist/esm/version.js
+var PACKAGE_VERSION = "1.43.1";
+var TARGETED_RPC_VERSION = "1.60.0";
+
+// node_modules/@mysten/sui/dist/esm/experimental/mvr.js
 var __typeError2 = (msg) => {
   throw TypeError(msg);
 };
@@ -2891,64 +2079,337 @@ var __accessCheck2 = (obj, member, msg) => member.has(obj) || __typeError2("Cann
 var __privateGet2 = (obj, member, getter) => (__accessCheck2(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
 var __privateAdd2 = (obj, member, value) => member.has(obj) ? __typeError2("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet2 = (obj, member, value, setter) => (__accessCheck2(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
-var _prefix;
+var __privateMethod = (obj, member, method) => (__accessCheck2(obj, member, "access private method"), method);
 var _cache2;
-var _ClientCache = class _ClientCache2 {
-  constructor({ prefix, cache } = {}) {
-    __privateAdd2(this, _prefix);
+var _url;
+var _pageSize;
+var _overrides;
+var _MvrClient_instances;
+var mvrPackageDataLoader_get;
+var mvrTypeDataLoader_get;
+var resolvePackages_fn;
+var resolveTypes_fn;
+var fetch_fn;
+var NAME_SEPARATOR = "/";
+var MVR_API_HEADER = {
+  "Mvr-Source": `@mysten/sui@${PACKAGE_VERSION}`
+};
+var MvrClient = class {
+  constructor({ cache, url, pageSize = 50, overrides }) {
+    __privateAdd2(this, _MvrClient_instances);
     __privateAdd2(this, _cache2);
-    __privateSet2(this, _prefix, prefix ?? []);
-    __privateSet2(this, _cache2, cache ?? /* @__PURE__ */ new Map());
+    __privateAdd2(this, _url);
+    __privateAdd2(this, _pageSize);
+    __privateAdd2(this, _overrides);
+    __privateSet2(this, _cache2, cache);
+    __privateSet2(this, _url, url);
+    __privateSet2(this, _pageSize, pageSize);
+    __privateSet2(this, _overrides, {
+      packages: overrides?.packages,
+      types: overrides?.types
+    });
+    validateOverrides(__privateGet2(this, _overrides));
   }
-  read(key, load) {
-    const cacheKey = [__privateGet2(this, _prefix), ...key].join(":");
-    if (__privateGet2(this, _cache2).has(cacheKey)) {
-      return __privateGet2(this, _cache2).get(cacheKey);
+  async resolvePackage({
+    package: name
+  }) {
+    if (!hasMvrName(name)) {
+      return {
+        package: name
+      };
     }
-    const result = load();
-    __privateGet2(this, _cache2).set(cacheKey, result);
-    if (typeof result === "object" && result !== null && "then" in result) {
-      return Promise.resolve(result).then((v) => {
-        __privateGet2(this, _cache2).set(cacheKey, v);
-        return v;
-      }).catch((err) => {
-        __privateGet2(this, _cache2).delete(cacheKey);
-        throw err;
+    const resolved = await __privateGet2(this, _MvrClient_instances, mvrPackageDataLoader_get).load(name);
+    return {
+      package: resolved
+    };
+  }
+  async resolveType({
+    type
+  }) {
+    if (!hasMvrName(type)) {
+      return {
+        type
+      };
+    }
+    const mvrTypes = [...extractMvrTypes(type)];
+    const resolvedTypes = await __privateGet2(this, _MvrClient_instances, mvrTypeDataLoader_get).loadMany(mvrTypes);
+    const typeMap = {};
+    for (let i = 0; i < mvrTypes.length; i++) {
+      const resolvedType = resolvedTypes[i];
+      if (resolvedType instanceof Error) {
+        throw resolvedType;
+      }
+      typeMap[mvrTypes[i]] = resolvedType;
+    }
+    return {
+      type: replaceMvrNames(type, typeMap)
+    };
+  }
+  async resolve({
+    types = [],
+    packages = []
+  }) {
+    const mvrTypes = /* @__PURE__ */ new Set();
+    for (const type of types ?? []) {
+      extractMvrTypes(type, mvrTypes);
+    }
+    const typesArray = [...mvrTypes];
+    const [resolvedTypes, resolvedPackages] = await Promise.all([
+      typesArray.length > 0 ? __privateGet2(this, _MvrClient_instances, mvrTypeDataLoader_get).loadMany(typesArray) : [],
+      packages.length > 0 ? __privateGet2(this, _MvrClient_instances, mvrPackageDataLoader_get).loadMany(packages) : []
+    ]);
+    const typeMap = __spreadValues({}, __privateGet2(this, _overrides)?.types);
+    for (const [i, type] of typesArray.entries()) {
+      const resolvedType = resolvedTypes[i];
+      if (resolvedType instanceof Error) {
+        throw resolvedType;
+      }
+      typeMap[type] = resolvedType;
+    }
+    const replacedTypes = {};
+    for (const type of types ?? []) {
+      const resolvedType = replaceMvrNames(type, typeMap);
+      replacedTypes[type] = {
+        type: resolvedType
+      };
+    }
+    const replacedPackages = {};
+    for (const [i, pkg] of (packages ?? []).entries()) {
+      const resolvedPkg = __privateGet2(this, _overrides)?.packages?.[pkg] ?? resolvedPackages[i];
+      if (resolvedPkg instanceof Error) {
+        throw resolvedPkg;
+      }
+      replacedPackages[pkg] = {
+        package: resolvedPkg
+      };
+    }
+    return {
+      types: replacedTypes,
+      packages: replacedPackages
+    };
+  }
+};
+_cache2 = /* @__PURE__ */ new WeakMap();
+_url = /* @__PURE__ */ new WeakMap();
+_pageSize = /* @__PURE__ */ new WeakMap();
+_overrides = /* @__PURE__ */ new WeakMap();
+_MvrClient_instances = /* @__PURE__ */ new WeakSet();
+mvrPackageDataLoader_get = function() {
+  return __privateGet2(this, _cache2).readSync(["#mvrPackageDataLoader", __privateGet2(this, _url) ?? ""], () => {
+    const loader = new DataLoader(async (packages) => {
+      if (!__privateGet2(this, _url)) {
+        throw new Error(
+          `MVR Api URL is not set for the current client (resolving ${packages.join(", ")})`
+        );
+      }
+      const resolved = await __privateMethod(this, _MvrClient_instances, resolvePackages_fn).call(this, packages);
+      return packages.map(
+        (pkg) => resolved[pkg] ?? new Error(`Failed to resolve package: ${pkg}`)
+      );
+    });
+    const overrides = __privateGet2(this, _overrides)?.packages;
+    if (overrides) {
+      for (const [pkg, id] of Object.entries(overrides)) {
+        loader.prime(pkg, id);
+      }
+    }
+    return loader;
+  });
+};
+mvrTypeDataLoader_get = function() {
+  return __privateGet2(this, _cache2).readSync(["#mvrTypeDataLoader", __privateGet2(this, _url) ?? ""], () => {
+    const loader = new DataLoader(async (types) => {
+      if (!__privateGet2(this, _url)) {
+        throw new Error(
+          `MVR Api URL is not set for the current client (resolving ${types.join(", ")})`
+        );
+      }
+      const resolved = await __privateMethod(this, _MvrClient_instances, resolveTypes_fn).call(this, types);
+      return types.map((type) => resolved[type] ?? new Error(`Failed to resolve type: ${type}`));
+    });
+    const overrides = __privateGet2(this, _overrides)?.types;
+    if (overrides) {
+      for (const [type, id] of Object.entries(overrides)) {
+        loader.prime(type, id);
+      }
+    }
+    return loader;
+  });
+};
+resolvePackages_fn = async function(packages) {
+  if (packages.length === 0) return {};
+  const batches = chunk(packages, __privateGet2(this, _pageSize));
+  const results = {};
+  await Promise.all(
+    batches.map(async (batch) => {
+      const data = await __privateMethod(this, _MvrClient_instances, fetch_fn).call(this, "/v1/resolution/bulk", {
+        names: batch
       });
-    }
-    return result;
+      if (!data?.resolution) return;
+      for (const pkg of Object.keys(data?.resolution)) {
+        const pkgData = data.resolution[pkg]?.package_id;
+        if (!pkgData) continue;
+        results[pkg] = pkgData;
+      }
+    })
+  );
+  return results;
+};
+resolveTypes_fn = async function(types) {
+  if (types.length === 0) return {};
+  const batches = chunk(types, __privateGet2(this, _pageSize));
+  const results = {};
+  await Promise.all(
+    batches.map(async (batch) => {
+      const data = await __privateMethod(this, _MvrClient_instances, fetch_fn).call(this, "/v1/struct-definition/bulk", {
+        types: batch
+      });
+      if (!data?.resolution) return;
+      for (const type of Object.keys(data?.resolution)) {
+        const typeData = data.resolution[type]?.type_tag;
+        if (!typeData) continue;
+        results[type] = typeData;
+      }
+    })
+  );
+  return results;
+};
+fetch_fn = async function(url, body) {
+  if (!__privateGet2(this, _url)) {
+    throw new Error("MVR Api URL is not set for the current client");
   }
-  readSync(key, load) {
-    const cacheKey = [__privateGet2(this, _prefix), ...key].join(":");
-    if (__privateGet2(this, _cache2).has(cacheKey)) {
-      return __privateGet2(this, _cache2).get(cacheKey);
-    }
-    const result = load();
-    __privateGet2(this, _cache2).set(cacheKey, result);
-    return result;
+  const response = await fetch(`${__privateGet2(this, _url)}${url}`, {
+    method: "POST",
+    headers: __spreadValues({
+      "Content-Type": "application/json"
+    }, MVR_API_HEADER),
+    body: JSON.stringify(body)
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(`Failed to resolve types: ${errorBody?.message}`);
   }
-  clear(prefix) {
-    const prefixKey = [...__privateGet2(this, _prefix), ...prefix ?? []].join(":");
-    if (!prefixKey) {
-      __privateGet2(this, _cache2).clear();
-      return;
-    }
-    for (const key of __privateGet2(this, _cache2).keys()) {
-      if (key.startsWith(prefixKey)) {
-        __privateGet2(this, _cache2).delete(key);
+  return response.json();
+};
+function validateOverrides(overrides) {
+  if (overrides?.packages) {
+    for (const [pkg, id] of Object.entries(overrides.packages)) {
+      if (!isValidNamedPackage(pkg)) {
+        throw new Error(`Invalid package name: ${pkg}`);
+      }
+      if (!isValidSuiAddress(normalizeSuiAddress(id))) {
+        throw new Error(`Invalid package ID: ${id}`);
       }
     }
   }
-  scope(prefix) {
-    return new _ClientCache2({
-      prefix: [...__privateGet2(this, _prefix), ...Array.isArray(prefix) ? prefix : [prefix]],
-      cache: __privateGet2(this, _cache2)
-    });
+  if (overrides?.types) {
+    for (const [type, val] of Object.entries(overrides.types)) {
+      if (parseStructTag(type).typeParams.length > 0) {
+        throw new Error(
+          "Type overrides must be first-level only. If you want to supply generic types, just pass each type individually."
+        );
+      }
+      const parsedValue = parseStructTag(val);
+      if (!isValidSuiAddress(parsedValue.address)) {
+        throw new Error(`Invalid type: ${val}`);
+      }
+    }
   }
-};
-_prefix = /* @__PURE__ */ new WeakMap();
-_cache2 = /* @__PURE__ */ new WeakMap();
-var ClientCache = _ClientCache;
+}
+function extractMvrTypes(type, types = /* @__PURE__ */ new Set()) {
+  if (typeof type === "string" && !hasMvrName(type)) return types;
+  const tag = isStructTag(type) ? type : parseStructTag(type);
+  if (hasMvrName(tag.address)) types.add(`${tag.address}::${tag.module}::${tag.name}`);
+  for (const param of tag.typeParams) {
+    extractMvrTypes(param, types);
+  }
+  return types;
+}
+function replaceMvrNames(tag, typeCache) {
+  const type = isStructTag(tag) ? tag : parseStructTag(tag);
+  const typeTag = `${type.address}::${type.module}::${type.name}`;
+  const cacheHit = typeCache[typeTag];
+  return normalizeStructTag(__spreadProps(__spreadValues({}, type), {
+    address: cacheHit ? cacheHit.split("::")[0] : type.address,
+    typeParams: type.typeParams.map((param) => replaceMvrNames(param, typeCache))
+  }));
+}
+function hasMvrName(nameOrType) {
+  return nameOrType.includes(NAME_SEPARATOR) || nameOrType.includes("@") || nameOrType.includes(".sui");
+}
+function isStructTag(type) {
+  return typeof type === "object" && "address" in type && "module" in type && "name" in type && "typeParams" in type;
+}
+function findNamesInTransaction(builder) {
+  const packages = /* @__PURE__ */ new Set();
+  const types = /* @__PURE__ */ new Set();
+  for (const command of builder.commands) {
+    switch (command.$kind) {
+      case "MakeMoveVec":
+        if (command.MakeMoveVec.type) {
+          getNamesFromTypeList([command.MakeMoveVec.type]).forEach((type) => {
+            types.add(type);
+          });
+        }
+        break;
+      case "MoveCall":
+        const moveCall = command.MoveCall;
+        const pkg = moveCall.package.split("::")[0];
+        if (hasMvrName(pkg)) {
+          if (!isValidNamedPackage(pkg)) throw new Error(`Invalid package name: ${pkg}`);
+          packages.add(pkg);
+        }
+        getNamesFromTypeList(moveCall.typeArguments ?? []).forEach((type) => {
+          types.add(type);
+        });
+        break;
+      default:
+        break;
+    }
+  }
+  return {
+    packages: [...packages],
+    types: [...types]
+  };
+}
+function replaceNames(builder, resolved) {
+  for (const command of builder.commands) {
+    if (command.MakeMoveVec?.type) {
+      if (!hasMvrName(command.MakeMoveVec.type)) continue;
+      if (!resolved.types[command.MakeMoveVec.type])
+        throw new Error(`No resolution found for type: ${command.MakeMoveVec.type}`);
+      command.MakeMoveVec.type = resolved.types[command.MakeMoveVec.type].type;
+    }
+    const tx = command.MoveCall;
+    if (!tx) continue;
+    const nameParts = tx.package.split("::");
+    const name = nameParts[0];
+    if (hasMvrName(name) && !resolved.packages[name])
+      throw new Error(`No address found for package: ${name}`);
+    if (hasMvrName(name)) {
+      nameParts[0] = resolved.packages[name].package;
+      tx.package = nameParts.join("::");
+    }
+    const types = tx.typeArguments;
+    if (!types) continue;
+    for (let i = 0; i < types.length; i++) {
+      if (!hasMvrName(types[i])) continue;
+      if (!resolved.types[types[i]]) throw new Error(`No resolution found for type: ${types[i]}`);
+      types[i] = resolved.types[types[i]].type;
+    }
+    tx.typeArguments = types;
+  }
+}
+function getNamesFromTypeList(types) {
+  const names = /* @__PURE__ */ new Set();
+  for (const type of types) {
+    if (hasMvrName(type)) {
+      if (!isValidNamedType(type)) throw new Error(`Invalid type with names: ${type}`);
+      names.add(type);
+    }
+  }
+  return names;
+}
 
 // node_modules/@mysten/sui/dist/esm/transactions/plugins/NamedPackagesPlugin.js
 var cacheMap = /* @__PURE__ */ new WeakMap();
@@ -2974,7 +2435,7 @@ var namedPackagesPlugin = (options) => {
     if (names.types.length === 0 && names.packages.length === 0) {
       return next();
     }
-    const resolved = await (mvrClient || getClient2(buildOptions).core.mvr).resolve({
+    const resolved = await (mvrClient || getClient(buildOptions).core.mvr).resolve({
       types: names.types,
       packages: names.packages
     });
@@ -2982,6 +2443,437 @@ var namedPackagesPlugin = (options) => {
     await next();
   };
 };
+function getClient(options) {
+  if (!options.client) {
+    throw new Error(
+      `No sui client passed to Transaction#build, but transaction data was not sufficient to build offline.`
+    );
+  }
+  return options.client;
+}
+
+// node_modules/@mysten/sui/dist/esm/transactions/data/v2.js
+function enumUnion(options) {
+  return union(
+    Object.entries(options).map(([key, value]) => object({ [key]: value }))
+  );
+}
+var Argument = enumUnion({
+  GasCoin: literal(true),
+  Input: pipe(number(), integer()),
+  Result: pipe(number(), integer()),
+  NestedResult: tuple([pipe(number(), integer()), pipe(number(), integer())])
+});
+var GasData = object({
+  budget: nullable(JsonU64),
+  price: nullable(JsonU64),
+  owner: nullable(SuiAddress),
+  payment: nullable(array(ObjectRefSchema))
+});
+var ProgrammableMoveCall = object({
+  package: ObjectID,
+  module: string(),
+  function: string(),
+  // snake case in rust
+  typeArguments: array(string()),
+  arguments: array(Argument)
+});
+var $Intent2 = object({
+  name: string(),
+  inputs: record(string(), union([Argument, array(Argument)])),
+  data: record(string(), unknown())
+});
+var Command = enumUnion({
+  MoveCall: ProgrammableMoveCall,
+  TransferObjects: object({
+    objects: array(Argument),
+    address: Argument
+  }),
+  SplitCoins: object({
+    coin: Argument,
+    amounts: array(Argument)
+  }),
+  MergeCoins: object({
+    destination: Argument,
+    sources: array(Argument)
+  }),
+  Publish: object({
+    modules: array(BCSBytes),
+    dependencies: array(ObjectID)
+  }),
+  MakeMoveVec: object({
+    type: nullable(string()),
+    elements: array(Argument)
+  }),
+  Upgrade: object({
+    modules: array(BCSBytes),
+    dependencies: array(ObjectID),
+    package: ObjectID,
+    ticket: Argument
+  }),
+  $Intent: $Intent2
+});
+var ObjectArg2 = enumUnion({
+  ImmOrOwnedObject: ObjectRefSchema,
+  SharedObject: object({
+    objectId: ObjectID,
+    // snake case in rust
+    initialSharedVersion: JsonU64,
+    mutable: boolean()
+  }),
+  Receiving: ObjectRefSchema
+});
+var CallArg = enumUnion({
+  Object: ObjectArg2,
+  Pure: object({
+    bytes: BCSBytes
+  }),
+  UnresolvedPure: object({
+    value: unknown()
+  }),
+  UnresolvedObject: object({
+    objectId: ObjectID,
+    version: optional(nullable(JsonU64)),
+    digest: optional(nullable(string())),
+    initialSharedVersion: optional(nullable(JsonU64)),
+    mutable: optional(nullable(boolean()))
+  })
+});
+var TransactionExpiration3 = enumUnion({
+  None: literal(true),
+  Epoch: JsonU64
+});
+var SerializedTransactionDataV2Schema = object({
+  version: literal(2),
+  sender: nullish(SuiAddress),
+  expiration: nullish(TransactionExpiration3),
+  gasData: GasData,
+  inputs: array(CallArg),
+  commands: array(Command),
+  digest: optional(nullable(string()))
+});
+
+// node_modules/@mysten/sui/dist/esm/jsonRpc/json-rpc-resolver.js
+var MAX_OBJECTS_PER_FETCH = 50;
+var GAS_SAFE_OVERHEAD = 1000n;
+var MAX_GAS = 5e10;
+function jsonRpcClientResolveTransactionPlugin(client) {
+  return async function resolveTransactionData(transactionData, options, next) {
+    await normalizeInputs(transactionData, client);
+    await resolveObjectReferences(transactionData, client);
+    if (!options.onlyTransactionKind) {
+      await setGasPrice(transactionData, client);
+      await setGasBudget(transactionData, client);
+      await setGasPayment(transactionData, client);
+    }
+    return await next();
+  };
+}
+async function setGasPrice(transactionData, client) {
+  if (!transactionData.gasConfig.price) {
+    transactionData.gasConfig.price = String(await client.getReferenceGasPrice());
+  }
+}
+async function setGasBudget(transactionData, client) {
+  if (transactionData.gasConfig.budget) {
+    return;
+  }
+  const dryRunResult = await client.dryRunTransactionBlock({
+    transactionBlock: transactionData.build({
+      overrides: {
+        gasData: {
+          budget: String(MAX_GAS),
+          payment: []
+        }
+      }
+    })
+  });
+  if (dryRunResult.effects.status.status !== "success") {
+    throw new Error(
+      `Dry run failed, could not automatically determine a budget: ${dryRunResult.effects.status.error}`,
+      { cause: dryRunResult }
+    );
+  }
+  const safeOverhead = GAS_SAFE_OVERHEAD * BigInt(transactionData.gasConfig.price || 1n);
+  const baseComputationCostWithOverhead = BigInt(dryRunResult.effects.gasUsed.computationCost) + safeOverhead;
+  const gasBudget = baseComputationCostWithOverhead + BigInt(dryRunResult.effects.gasUsed.storageCost) - BigInt(dryRunResult.effects.gasUsed.storageRebate);
+  transactionData.gasConfig.budget = String(
+    gasBudget > baseComputationCostWithOverhead ? gasBudget : baseComputationCostWithOverhead
+  );
+}
+async function setGasPayment(transactionData, client) {
+  if (!transactionData.gasConfig.payment) {
+    const coins = await client.getCoins({
+      owner: transactionData.gasConfig.owner || transactionData.sender,
+      coinType: SUI_TYPE_ARG
+    });
+    const paymentCoins = coins.data.filter((coin) => {
+      const matchingInput = transactionData.inputs.find((input) => {
+        if (input.Object?.ImmOrOwnedObject) {
+          return coin.coinObjectId === input.Object.ImmOrOwnedObject.objectId;
+        }
+        return false;
+      });
+      return !matchingInput;
+    }).map((coin) => ({
+      objectId: coin.coinObjectId,
+      digest: coin.digest,
+      version: coin.version
+    }));
+    if (!paymentCoins.length) {
+      throw new Error("No valid gas coins found for the transaction.");
+    }
+    transactionData.gasConfig.payment = paymentCoins.map(
+      (payment) => parse(ObjectRefSchema, payment)
+    );
+  }
+}
+async function resolveObjectReferences(transactionData, client) {
+  const objectsToResolve = transactionData.inputs.filter((input) => {
+    return input.UnresolvedObject && !(input.UnresolvedObject.version || input.UnresolvedObject?.initialSharedVersion);
+  });
+  const dedupedIds = [
+    ...new Set(
+      objectsToResolve.map((input) => normalizeSuiObjectId(input.UnresolvedObject.objectId))
+    )
+  ];
+  const objectChunks = dedupedIds.length ? chunk(dedupedIds, MAX_OBJECTS_PER_FETCH) : [];
+  const resolved = (await Promise.all(
+    objectChunks.map(
+      (chunk2) => client.multiGetObjects({
+        ids: chunk2,
+        options: { showOwner: true }
+      })
+    )
+  )).flat();
+  const responsesById = new Map(
+    dedupedIds.map((id, index) => {
+      return [id, resolved[index]];
+    })
+  );
+  const invalidObjects = Array.from(responsesById).filter(([_, obj]) => obj.error).map(([_, obj]) => JSON.stringify(obj.error));
+  if (invalidObjects.length) {
+    throw new Error(`The following input objects are invalid: ${invalidObjects.join(", ")}`);
+  }
+  const objects = resolved.map((object2) => {
+    if (object2.error || !object2.data) {
+      throw new Error(`Failed to fetch object: ${object2.error}`);
+    }
+    const owner = object2.data.owner;
+    const initialSharedVersion = owner && typeof owner === "object" ? "Shared" in owner ? owner.Shared.initial_shared_version : "ConsensusAddressOwner" in owner ? owner.ConsensusAddressOwner.start_version : null : null;
+    return {
+      objectId: object2.data.objectId,
+      digest: object2.data.digest,
+      version: object2.data.version,
+      initialSharedVersion
+    };
+  });
+  const objectsById = new Map(
+    dedupedIds.map((id, index) => {
+      return [id, objects[index]];
+    })
+  );
+  for (const [index, input] of transactionData.inputs.entries()) {
+    if (!input.UnresolvedObject) {
+      continue;
+    }
+    let updated;
+    const id = normalizeSuiAddress(input.UnresolvedObject.objectId);
+    const object2 = objectsById.get(id);
+    if (input.UnresolvedObject.initialSharedVersion ?? object2?.initialSharedVersion) {
+      updated = Inputs.SharedObjectRef({
+        objectId: id,
+        initialSharedVersion: input.UnresolvedObject.initialSharedVersion || object2?.initialSharedVersion,
+        mutable: input.UnresolvedObject.mutable || isUsedAsMutable(transactionData, index)
+      });
+    } else if (isUsedAsReceiving(transactionData, index)) {
+      updated = Inputs.ReceivingRef(
+        {
+          objectId: id,
+          digest: input.UnresolvedObject.digest ?? object2?.digest,
+          version: input.UnresolvedObject.version ?? object2?.version
+        }
+      );
+    }
+    transactionData.inputs[transactionData.inputs.indexOf(input)] = updated ?? Inputs.ObjectRef({
+      objectId: id,
+      digest: input.UnresolvedObject.digest ?? object2?.digest,
+      version: input.UnresolvedObject.version ?? object2?.version
+    });
+  }
+}
+async function normalizeInputs(transactionData, client) {
+  const { inputs, commands } = transactionData;
+  const moveCallsToResolve = [];
+  const moveFunctionsToResolve = /* @__PURE__ */ new Set();
+  commands.forEach((command) => {
+    if (command.MoveCall) {
+      if (command.MoveCall._argumentTypes) {
+        return;
+      }
+      const inputs2 = command.MoveCall.arguments.map((arg) => {
+        if (arg.$kind === "Input") {
+          return transactionData.inputs[arg.Input];
+        }
+        return null;
+      });
+      const needsResolution = inputs2.some(
+        (input) => input?.UnresolvedPure || input?.UnresolvedObject && typeof input?.UnresolvedObject.mutable !== "boolean"
+      );
+      if (needsResolution) {
+        const functionName = `${command.MoveCall.package}::${command.MoveCall.module}::${command.MoveCall.function}`;
+        moveFunctionsToResolve.add(functionName);
+        moveCallsToResolve.push(command.MoveCall);
+      }
+    }
+  });
+  const moveFunctionParameters = /* @__PURE__ */ new Map();
+  if (moveFunctionsToResolve.size > 0) {
+    await Promise.all(
+      [...moveFunctionsToResolve].map(async (functionName) => {
+        const [packageId, moduleId, functionId] = functionName.split("::");
+        const def = await client.getNormalizedMoveFunction({
+          package: packageId,
+          module: moduleId,
+          function: functionId
+        });
+        moveFunctionParameters.set(
+          functionName,
+          def.parameters.map((param) => normalizedTypeToMoveTypeSignature(param))
+        );
+      })
+    );
+  }
+  if (moveCallsToResolve.length) {
+    await Promise.all(
+      moveCallsToResolve.map(async (moveCall) => {
+        const parameters = moveFunctionParameters.get(
+          `${moveCall.package}::${moveCall.module}::${moveCall.function}`
+        );
+        if (!parameters) {
+          return;
+        }
+        const hasTxContext = parameters.length > 0 && isTxContext(parameters.at(-1));
+        const params = hasTxContext ? parameters.slice(0, parameters.length - 1) : parameters;
+        moveCall._argumentTypes = params;
+      })
+    );
+  }
+  commands.forEach((command) => {
+    if (!command.MoveCall) {
+      return;
+    }
+    const moveCall = command.MoveCall;
+    const fnName = `${moveCall.package}::${moveCall.module}::${moveCall.function}`;
+    const params = moveCall._argumentTypes;
+    if (!params) {
+      return;
+    }
+    if (params.length !== command.MoveCall.arguments.length) {
+      throw new Error(`Incorrect number of arguments for ${fnName}`);
+    }
+    params.forEach((param, i) => {
+      const arg = moveCall.arguments[i];
+      if (arg.$kind !== "Input") return;
+      const input = inputs[arg.Input];
+      if (!input.UnresolvedPure && !input.UnresolvedObject) {
+        return;
+      }
+      const inputValue = input.UnresolvedPure?.value ?? input.UnresolvedObject?.objectId;
+      const schema = getPureBcsSchema(param.body);
+      if (schema) {
+        arg.type = "pure";
+        inputs[inputs.indexOf(input)] = Inputs.Pure(schema.serialize(inputValue));
+        return;
+      }
+      if (typeof inputValue !== "string") {
+        throw new Error(
+          `Expect the argument to be an object id string, got ${JSON.stringify(
+            inputValue,
+            null,
+            2
+          )}`
+        );
+      }
+      arg.type = "object";
+      const unresolvedObject = input.UnresolvedPure ? {
+        $kind: "UnresolvedObject",
+        UnresolvedObject: {
+          objectId: inputValue
+        }
+      } : input;
+      inputs[arg.Input] = unresolvedObject;
+    });
+  });
+}
+function isUsedAsMutable(transactionData, index) {
+  let usedAsMutable = false;
+  transactionData.getInputUses(index, (arg, tx) => {
+    if (tx.MoveCall && tx.MoveCall._argumentTypes) {
+      const argIndex = tx.MoveCall.arguments.indexOf(arg);
+      usedAsMutable = tx.MoveCall._argumentTypes[argIndex].ref !== "&" || usedAsMutable;
+    }
+    if (tx.$kind === "MakeMoveVec" || tx.$kind === "MergeCoins" || tx.$kind === "SplitCoins" || tx.$kind === "TransferObjects") {
+      usedAsMutable = true;
+    }
+  });
+  return usedAsMutable;
+}
+function isUsedAsReceiving(transactionData, index) {
+  let usedAsReceiving = false;
+  transactionData.getInputUses(index, (arg, tx) => {
+    if (tx.MoveCall && tx.MoveCall._argumentTypes) {
+      const argIndex = tx.MoveCall.arguments.indexOf(arg);
+      usedAsReceiving = isReceivingType(tx.MoveCall._argumentTypes[argIndex]) || usedAsReceiving;
+    }
+  });
+  return usedAsReceiving;
+}
+function isReceivingType(type) {
+  if (typeof type.body !== "object" || !("datatype" in type.body)) {
+    return false;
+  }
+  return type.body.datatype.package === "0x2" && type.body.datatype.module === "transfer" && type.body.datatype.type === "Receiving";
+}
+
+// node_modules/@mysten/sui/dist/esm/transactions/resolve.js
+function needsTransactionResolution(data, options) {
+  if (data.inputs.some((input) => {
+    return input.UnresolvedObject || input.UnresolvedPure;
+  })) {
+    return true;
+  }
+  if (!options.onlyTransactionKind) {
+    if (!data.gasConfig.price || !data.gasConfig.budget || !data.gasConfig.payment) {
+      return true;
+    }
+  }
+  return false;
+}
+async function resolveTransactionPlugin(transactionData, options, next) {
+  normalizeRawArguments(transactionData);
+  if (!needsTransactionResolution(transactionData, options)) {
+    await validate(transactionData);
+    return next();
+  }
+  const client = getClient2(options);
+  const plugin = client.core?.resolveTransactionPlugin() ?? jsonRpcClientResolveTransactionPlugin(client);
+  return plugin(transactionData, options, async () => {
+    await validate(transactionData);
+    await next();
+  });
+}
+function validate(transactionData) {
+  transactionData.inputs.forEach((input, index) => {
+    if (input.$kind !== "Object" && input.$kind !== "Pure") {
+      throw new Error(
+        `Input at index ${index} has not been resolved.  Expected a Pure or Object input, but found ${JSON.stringify(
+          input
+        )}`
+      );
+    }
+  });
+}
 function getClient2(options) {
   if (!options.client) {
     throw new Error(
@@ -2989,6 +2881,117 @@ function getClient2(options) {
     );
   }
   return options.client;
+}
+function normalizeRawArguments(transactionData) {
+  for (const command of transactionData.commands) {
+    switch (command.$kind) {
+      case "SplitCoins":
+        command.SplitCoins.amounts.forEach((amount) => {
+          normalizeRawArgument(amount, suiBcs.U64, transactionData);
+        });
+        break;
+      case "TransferObjects":
+        normalizeRawArgument(command.TransferObjects.address, suiBcs.Address, transactionData);
+        break;
+    }
+  }
+}
+function normalizeRawArgument(arg, schema, transactionData) {
+  if (arg.$kind !== "Input") {
+    return;
+  }
+  const input = transactionData.inputs[arg.Input];
+  if (input.$kind !== "UnresolvedPure") {
+    return;
+  }
+  transactionData.inputs[arg.Input] = Inputs.Pure(schema.serialize(input.UnresolvedPure.value));
+}
+
+// node_modules/@mysten/sui/dist/esm/transactions/object.js
+function createObjectMethods(makeObject) {
+  function object2(value) {
+    return makeObject(value);
+  }
+  object2.system = (options) => {
+    const mutable = options?.mutable;
+    if (mutable !== void 0) {
+      return object2(
+        Inputs.SharedObjectRef({
+          objectId: "0x5",
+          initialSharedVersion: 1,
+          mutable
+        })
+      );
+    }
+    return object2({
+      $kind: "UnresolvedObject",
+      UnresolvedObject: {
+        objectId: "0x5",
+        initialSharedVersion: 1
+      }
+    });
+  };
+  object2.clock = () => object2(
+    Inputs.SharedObjectRef({
+      objectId: "0x6",
+      initialSharedVersion: 1,
+      mutable: false
+    })
+  );
+  object2.random = () => object2({
+    $kind: "UnresolvedObject",
+    UnresolvedObject: {
+      objectId: "0x8",
+      mutable: false
+    }
+  });
+  object2.denyList = (options) => {
+    return object2({
+      $kind: "UnresolvedObject",
+      UnresolvedObject: {
+        objectId: "0x403",
+        mutable: options?.mutable
+      }
+    });
+  };
+  object2.option = ({ type, value }) => (tx) => tx.moveCall({
+    typeArguments: [type],
+    target: `0x1::option::${value === null ? "none" : "some"}`,
+    arguments: value === null ? [] : [tx.object(value)]
+  });
+  return object2;
+}
+
+// node_modules/@mysten/sui/dist/esm/transactions/pure.js
+function createPure(makePure) {
+  function pure(typeOrSerializedValue, value) {
+    if (typeof typeOrSerializedValue === "string") {
+      return makePure(pureBcsSchemaFromTypeName(typeOrSerializedValue).serialize(value));
+    }
+    if (typeOrSerializedValue instanceof Uint8Array || isSerializedBcs(typeOrSerializedValue)) {
+      return makePure(typeOrSerializedValue);
+    }
+    throw new Error("tx.pure must be called either a bcs type name, or a serialized bcs value");
+  }
+  pure.u8 = (value) => makePure(suiBcs.U8.serialize(value));
+  pure.u16 = (value) => makePure(suiBcs.U16.serialize(value));
+  pure.u32 = (value) => makePure(suiBcs.U32.serialize(value));
+  pure.u64 = (value) => makePure(suiBcs.U64.serialize(value));
+  pure.u128 = (value) => makePure(suiBcs.U128.serialize(value));
+  pure.u256 = (value) => makePure(suiBcs.U256.serialize(value));
+  pure.bool = (value) => makePure(suiBcs.Bool.serialize(value));
+  pure.string = (value) => makePure(suiBcs.String.serialize(value));
+  pure.address = (value) => makePure(suiBcs.Address.serialize(value));
+  pure.id = pure.address;
+  pure.vector = (type, value) => {
+    return makePure(
+      suiBcs.vector(pureBcsSchemaFromTypeName(type)).serialize(value)
+    );
+  };
+  pure.option = (type, value) => {
+    return makePure(suiBcs.option(pureBcsSchemaFromTypeName(type)).serialize(value));
+  };
+  return pure;
 }
 
 // node_modules/@mysten/sui/dist/esm/transactions/Transaction.js
@@ -3652,19 +3655,28 @@ sortCommandsAndInputs_fn = function() {
 var Transaction = _Transaction;
 
 export {
+  getPureBcsSchema,
+  normalizedTypeToMoveTypeSignature,
+  Inputs,
   bigint,
   object,
   string,
+  parse,
+  UpgradePolicy,
+  Commands,
   jsonRpcClientResolveTransactionPlugin,
+  getClient2 as getClient,
   createObjectMethods,
   createPure,
   TransactionDataBuilder,
+  isArgument,
   ClientCache,
   PACKAGE_VERSION,
   TARGETED_RPC_VERSION,
   MvrClient,
   hasMvrName,
+  namedPackagesPlugin,
   isTransaction,
   Transaction
 };
-//# sourceMappingURL=chunk-IX2S6EDK.js.map
+//# sourceMappingURL=chunk-OJZEUKCG.js.map
